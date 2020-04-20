@@ -23,40 +23,99 @@ namespace WebApplication1.DigitalSevaPaymentGateway
 
         protected void btnFirstProduct_Click(object sender, EventArgs e)
         {
-
-            BridgePGUtil objBridgePGUtil = new BridgePGUtil();
-            string merchant_id = ConfigurationManager.AppSettings["MERCHANT_ID"];
-            string productid = ConfigurationManager.AppSettings["product_id1"];
-            string productname = ConfigurationManager.AppSettings["product_name1"];
-            string csc_id = "500100100013"; // Pass The CSCID from digital seva connect 
-                                  //  string csc_id = "577298060018"; // Pass The CSCID from digital seva connect 
-            string txn_amount = "10.00";   //  Change the Amount value According 
-
+            /// TIME NEEDS TO BE IN INDIA STANDARD TIME 
             DateTime databaseUtcTime = DateTime.UtcNow;
             var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(databaseUtcTime, indiaTimeZone);
-            string merchant_receipt_no = merchant_id +"-"+ indiaTime.Year.ToString().PadLeft(4, '0') + indiaTime.Month.ToString().PadLeft(2, '0') + indiaTime.Day.ToString().PadLeft(2, '0') + indiaTime.Hour.ToString().PadLeft(2, '0') + indiaTime.Minute.ToString().PadLeft(2, '0') + indiaTime.Second.ToString().PadLeft(2, '0') + indiaTime.Millisecond.ToString().PadLeft(2, '0');
 
-            //string merchant_receipt_no = merchant_id + DateTime.Now.Year.ToString().PadLeft(4, '0') + DateTime.Now.Month.ToString().PadLeft(2, '0') + DateTime.Now.Day.ToString().PadLeft(2, '0') + DateTime.Now.Hour.ToString().PadLeft(2, '0') + DateTime.Now.Minute.ToString().PadLeft(2, '0') + DateTime.Now.Second.ToString().PadLeft(2, '0') + DateTime.Now.Millisecond.ToString().PadLeft(4, '0');
+
+            BridgePGUtil objBridgePGUtil = new BridgePGUtil();
+            string merchant_id = ConfigurationManager.AppSettings["merchant_id"];
+            string csc_id = Session["username"].ToString();
+            string merchant_txn = merchant_id + indiaTime.Year.ToString().PadLeft(4, '0') + indiaTime.Month.ToString().PadLeft(2, '0') + indiaTime.Day.ToString().PadLeft(2, '0') + indiaTime.Hour.ToString().PadLeft(2, '0') + indiaTime.Minute.ToString().PadLeft(2, '0') + indiaTime.Second.ToString().PadLeft(2, '0') + indiaTime.Millisecond.ToString().PadLeft(2, '0');
+            string merchant_txn_date_time = indiaTime.Year.ToString().PadLeft(4, '0') + "-" + indiaTime.Month.ToString().PadLeft(2, '0') + "-" + indiaTime.Day.ToString().PadLeft(2, '0') + " " + indiaTime.Hour.ToString().PadLeft(2, '0') + ":" + indiaTime.Minute.ToString().PadLeft(2, '0') + ":" + indiaTime.Second.ToString().PadLeft(2, '0');
+            string product_id = ConfigurationManager.AppSettings["product_id1"];
+            string product_name = ConfigurationManager.AppSettings["product_name1"];
+            string txn_amount = "200";
+            string amount_parameter = "NA";
+            string txn_mode = "D";
+            string txn_type = "D";
+            string merchant_receipt_no = merchant_id + indiaTime.Year.ToString().PadLeft(4, '0') + indiaTime.Month.ToString().PadLeft(2, '0') + indiaTime.Day.ToString().PadLeft(2, '0') + indiaTime.Hour.ToString().PadLeft(2, '0') + indiaTime.Minute.ToString().PadLeft(2, '0') + indiaTime.Second.ToString().PadLeft(2, '0') + indiaTime.Millisecond.ToString().PadLeft(4, '0');
+            string csc_share_amount = "0";
+            string pay_to_email = "a@abc.com";
             string return_url = ConfigurationManager.AppSettings["SUCCESS_URL"];
             string cancel_url = ConfigurationManager.AppSettings["FAILURE_URL"];
-            string regNo = GetUniqueKey(10);
-            string message = objBridgePGUtil.CreatePGData(merchant_id, csc_id, txn_amount, merchant_receipt_no, merchant_receipt_no, return_url, cancel_url, productid, productname, regNo, "", "", "", "0");
-            message = ConfigurationManager.AppSettings["MERCHANT_ID"] + "|" + message;
+            string Currency = "INR";
+            string Discount = "0";
+            string param_1 = "NA";
+            string param_2 = "NA";
+            string param_3 = "NA";
+            string param_4 = "NA";
+
+
+
+            string message = objBridgePGUtil.CreateMessage(merchant_id, csc_id, merchant_txn, merchant_txn_date_time, product_id,
+                                 product_name, txn_amount, amount_parameter, txn_mode, txn_type, merchant_receipt_no,
+                                 csc_share_amount, pay_to_email, return_url, cancel_url, Currency, Discount, param_1,
+                                 param_2, param_3, param_4);
+
+            message = ConfigurationManager.AppSettings["merchant_id"] + "|" + message;
+
             Response.Clear();
+
             StringBuilder sb = new StringBuilder();
             sb.Append("<html>");
             sb.AppendFormat(@"<body onload='document.forms[""form""].submit()'>");
             sb.AppendFormat("<form name='form' action='{0}' method='post'>", objBridgePGUtil.CreateURLappendString());
             sb.AppendFormat("<input type='hidden' name='message' value='{0}'>", message);
-            // Other params go here
             sb.Append("</form>");
             sb.Append("</body>");
             sb.Append("</html>");
-            Response.Write(sb.ToString());
+            string strpost = sb.ToString();
+
+            Response.Write(strpost);
+
             Response.End();
 
+
+
         }
+
+        //protected void btnFirstProduct_Click(object sender, EventArgs e)
+        //{
+        //    BridgePGUtil objBridgePGUtil = new BridgePGUtil();
+        //    string merchant_id = ConfigurationManager.AppSettings["MERCHANT_ID"];
+        //    string productid = ConfigurationManager.AppSettings["product_id1"];
+        //    string productname = ConfigurationManager.AppSettings["product_name1"];
+        //    string csc_id = "500100100013"; // Pass The CSCID from digital seva connect 
+        //                                    //  string csc_id = "577298060018"; // Pass The CSCID from digital seva connect 
+        //    string txn_amount = "50.0";   //  Change the Amount value According 
+
+        //    DateTime databaseUtcTime = DateTime.UtcNow;
+        //    var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+        //    var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(databaseUtcTime, indiaTimeZone);
+        //    string merchant_receipt_no = merchant_id + "-" + indiaTime.Year.ToString().PadLeft(4, '0') + indiaTime.Month.ToString().PadLeft(2, '0') + indiaTime.Day.ToString().PadLeft(2, '0') + indiaTime.Hour.ToString().PadLeft(2, '0') + (indiaTime.Minute + 1).ToString().PadLeft(2, '0') + 1 + indiaTime.Second.ToString().PadLeft(2, '0') + indiaTime.Millisecond.ToString().PadLeft(2, '0');
+
+        //    //string merchant_receipt_no = merchant_id + DateTime.Now.Year.ToString().PadLeft(4, '0') + DateTime.Now.Month.ToString().PadLeft(2, '0') + DateTime.Now.Day.ToString().PadLeft(2, '0') + DateTime.Now.Hour.ToString().PadLeft(2, '0') + DateTime.Now.Minute.ToString().PadLeft(2, '0') + DateTime.Now.Second.ToString().PadLeft(2, '0') + DateTime.Now.Millisecond.ToString().PadLeft(4, '0');
+        //    string return_url = ConfigurationManager.AppSettings["SUCCESS_URL"];
+        //    string cancel_url = ConfigurationManager.AppSettings["FAILURE_URL"];
+        //    string regNo = GetUniqueKey(10);
+        //    string message = objBridgePGUtil.CreatePGData(merchant_id, csc_id, txn_amount, merchant_receipt_no, merchant_receipt_no, return_url, cancel_url, productid, productname, regNo, "NA", "NA", "NA", "10");
+        //    message = ConfigurationManager.AppSettings["MERCHANT_ID"] + "|" + message;
+        //    Response.Clear();
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.Append("<html>");
+        //    sb.AppendFormat(@"<body onload='document.forms[""form""].submit()'>");
+        //    sb.AppendFormat("<form name='form' action='{0}' method='post'>", objBridgePGUtil.CreateURLappendString());
+        //    sb.AppendFormat("<input type='hidden' name='message' value='{0}'>", message);
+        //    // Other params go here
+        //    sb.Append("</form>");
+        //    sb.Append("</body>");
+        //    sb.Append("</html>");
+        //    Response.Write(sb.ToString());
+        //    Response.End();
+
+        //}
 
         public static string GetUniqueKey(int maxSize)
         {
@@ -104,6 +163,64 @@ namespace WebApplication1.DigitalSevaPaymentGateway
         public string param_3 { get; set; }
         public string param_4 { get; set; }
 
+        public string CreateMessage(string merchant_id,
+                                    string csc_id,
+                                    string merchant_txn,
+                                    string merchant_txn_date_time,
+                                    string product_id,
+                                    string product_name,
+                                    string txn_amount,
+                                    string amount_parameter,
+                                    string txn_mode,
+                                    string txn_type,
+                                    string merchant_receipt_no,
+                                    string csc_share_amount,
+                                    string pay_to_email,
+                                    string return_url,
+                                    string cancel_url,
+                                    string Currency,
+                                    string Discount,
+                                    string param_1,
+                                    string param_2,
+                                    string param_3,
+                                    string param_4)
+        {
+
+
+            string postMessage = "merchant_id=" + merchant_id + "|"
+                                + "csc_id=" + csc_id + "|"
+                                + "merchant_txn=" + merchant_txn + "|"
+                                + "merchant_txn_date_time=" + merchant_txn_date_time + "|"
+                                + "product_id=" + product_id + "|"
+                                + "product_name=" + product_name + "|"
+                                + "txn_amount=" + txn_amount + "|"
+                                + "amount_parameter=" + amount_parameter + "|"
+                                + "txn_mode=" + txn_mode + "|"
+                                + "txn_type=" + txn_type + "|"
+                                + "merchant_receipt_no=" + merchant_receipt_no + "|"
+                                + "csc_share_amount=" + csc_share_amount + "|"
+                                + "pay_to_email=" + pay_to_email + "|"
+                                + "return_url=" + return_url + "|"
+                                + "cancel_url=" + cancel_url + "|"
+                                + "Currency=" + Currency + "|"
+                                + "Discount=" + Discount + "|"
+                                + "param_1=" + param_1 + "|"
+                                + "param_2=" + param_2 + "|"
+                                + "param_3=" + param_3 + "|"
+                                + "param_4=" + param_4 + "|";
+
+            Crypto.privateKey = ConfigurationManager.AppSettings["PRIVATE_KEY"];
+            Crypto.publicKey = ConfigurationManager.AppSettings["PUBLIC_KEY"];
+
+
+            return Crypto.encrypt(postMessage, Crypto.publicKey, Crypto.privateKey);
+        }
+
+
+
+
+
+
         public string CreateMessage(string merchant_id, string csc_id, string txn_amount, string merchant_txn, string merchant_receipt_no, string return_url, string cancel_url, string product_id, string product_name, string strRegNo)
         {
             string postMessage = string.Empty;
@@ -120,7 +237,7 @@ namespace WebApplication1.DigitalSevaPaymentGateway
             var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(databaseUtcTime, indiaTimeZone);
 
-            objBridgePGUtil.merchant_txn_date_time = 
+            objBridgePGUtil.merchant_txn_date_time =
             objBridgePGUtil.merchant_txn = merchant_txn;
             objBridgePGUtil.product_id = product_id;
             objBridgePGUtil.product_name = product_name;
@@ -171,13 +288,14 @@ namespace WebApplication1.DigitalSevaPaymentGateway
 
             return Crypto.encrypt(postMessage, Crypto.publicKey, Crypto.privateKey);
         }
-        public string CreatePGData(string merchant_id,
+        public string CreatePGData(
+            string merchant_id,
             string csc_id,
             string txn_amount,
-            string merchant_txn, 
+            string merchant_txn,
             string merchant_receipt_no,
             string return_url,
-            string cancel_url, 
+            string cancel_url,
             string product_id,
             string product_name,
             string strRegNo,
@@ -195,13 +313,13 @@ namespace WebApplication1.DigitalSevaPaymentGateway
             objBridgePGUtil.merchant_receipt_no = merchant_receipt_no;
             objBridgePGUtil.return_url = return_url;
             objBridgePGUtil.cancel_url = cancel_url;
-            DateTime databaseUtcTime =DateTime.UtcNow;
+            DateTime databaseUtcTime = DateTime.UtcNow;
             var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(databaseUtcTime, indiaTimeZone);
             objBridgePGUtil.merchant_txn_date_time = indiaTime.Year.ToString().PadLeft(4, '0') + "-" + indiaTime.Month.ToString().PadLeft(2, '0') + "-" + indiaTime.Day.ToString().PadLeft(2, '0') + " " + indiaTime.ToString("HH:mm:ss").PadLeft(2, '0');
 
 
-           // objBridgePGUtil.merchant_txn_date_time = DateTime.Now.Year.ToString().PadLeft(4, '0') + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + ":" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + ":" + DateTime.Now.Second.ToString().PadLeft(2, '0');
+            // objBridgePGUtil.merchant_txn_date_time = DateTime.Now.Year.ToString().PadLeft(4, '0') + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + ":" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + ":" + DateTime.Now.Second.ToString().PadLeft(2, '0');
             objBridgePGUtil.merchant_txn = merchant_txn;
             objBridgePGUtil.product_id = product_id;
             objBridgePGUtil.product_name = product_name;
@@ -243,6 +361,7 @@ namespace WebApplication1.DigitalSevaPaymentGateway
                                 + "param_4=" + objListBridgePGUtil[i].param_4 + "|";
 
             }
+
             string strPRIVATE_KEY = ConfigurationManager.AppSettings["PRIVATE_KEY"];
             string strPUBLIC_KEY = ConfigurationManager.AppSettings["PUBLIC_KEY"];
             strPRIVATE_KEY = Base64Decode(strPRIVATE_KEY);
@@ -250,12 +369,17 @@ namespace WebApplication1.DigitalSevaPaymentGateway
             Crypto.privateKey = strPRIVATE_KEY;
             Crypto.publicKey = strPUBLIC_KEY;
 
+
             return Crypto.encrypt(postMessage, Crypto.publicKey, Crypto.privateKey);
         }
 
         public string CreateURLappendString()
         {
-            Int64 a = Convert.ToInt64(DateTime.Now.Year.ToString().Substring(2, 2) + DateTime.Now.Month.ToString().PadLeft(2, '0') + DateTime.Now.Day.ToString().PadLeft(2, '0') + DateTime.Now.Hour.ToString().PadLeft(2, '0') + DateTime.Now.Minute.ToString().PadLeft(2, '0') + DateTime.Now.Second.ToString().PadLeft(2, '0')) * 883 + (1000 - 883);
+            DateTime databaseUtcTime = DateTime.UtcNow;
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(databaseUtcTime, indiaTimeZone);
+            Int64 a = Convert.ToInt64(indiaTime.Year.ToString().Substring(2, 2) + indiaTime.Month.ToString().PadLeft(2, '0') + indiaTime.Day.ToString().PadLeft(2, '0') + indiaTime.Hour.ToString().PadLeft(2, '0') + (indiaTime.Minute + 1).ToString().PadLeft(2, '0') + indiaTime.Second.ToString().PadLeft(2, '0')) * 883 + (1000 - 883);
+            //Int64 a = Convert.ToInt64(DateTime.Now.Year.ToString().Substring(2, 2) + DateTime.Now.Month.ToString().PadLeft(2, '0') + DateTime.Now.Day.ToString().PadLeft(2, '0') + DateTime.Now.Hour.ToString().PadLeft(2, '0') + DateTime.Now.Minute.ToString().PadLeft(2, '0') + DateTime.Now.Second.ToString().PadLeft(2, '0')) * 883 + (1000 - 883);
             string returnvalue = ConfigurationManager.AppSettings["PAY_URL"] + a.ToString();
             return returnvalue;
         }
